@@ -1,12 +1,10 @@
 const router = require('express').Router();
 const { getUsers, getUsersProfile } = require('../controllers/users');
 
-
 router.get('/', getUsers);
 router.get('/:id', getUsersProfile);
 
 module.exports = router;
-
 
 // const users_path = path.join(__dirname, '../data/users.json');
 
@@ -36,7 +34,6 @@ module.exports = router;
 //   });
 // };
 
-
 // const doesUserExist = (req, res, next) => {
 //   if (file_data){
 //     console.log(file_data);
@@ -49,7 +46,6 @@ module.exports = router;
 //     console.log(`Data doesn't exist!`);
 //     return;
 // };
-
 
 // user_router.get('/', readFile, (req, res) => {
 //   console.log(file_data);

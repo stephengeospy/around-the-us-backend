@@ -1,14 +1,17 @@
 const Card = require('../models/card');
 
 const handleError = (err, res) => {
-  if ( err.name === 'ValidationError' ) {
+  if ( err.name === 'ValidationError') {
     err.statusCode = 400
     err.message = "Bad request"
+  } else if (err.name === 'DocumentNotFoundError') {
+    err.statusCode = 404
+    err.message = "The requested Card is not found."
   } else {
     err.statusCode = 500
     err.message = "Internal Server Error"
   }
-  res.status(err.statusCode).send({ message: `${err.message} - ${err.name}` });
+  res.status(err.statusCode).send({ message: `${err.name} - ${err.message}` });
 };
 
 const getCards = (req, res) => {
@@ -36,4 +39,40 @@ const createCard = (req, res) => {
     .catch((err) => handleError(err, res));
 };
 
-module.exports = { getCards,  getCardInfo, createCard };
+const deleteCard = (req, res) => {
+  Card.findByIdAndRemove( req.params.cardId )
+    .orFail()
+    .then((card) => { res.status(200).send(card) })
+    .catch((err) => handleError(err, res));
+};
+
+const likeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },  // add _id to the array if it's not there yet
+    {
+      new: true,
+      runValidators: true
+    }
+  )
+  .orFail()
+  .then((card) => res.status(202).send({ card }))
+  .catch((err) => handleError(err, res));
+};
+
+const dislikeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },  // remove _id from the array
+    {
+      new: true,
+      runValidators: true
+    }
+  )
+  .orFail()
+  .then((card) => res.send({ card }))
+  .catch((err) => handleError(err, res));
+};
+
+module.exports = {  getCards,  getCardInfo, createCard,
+                    deleteCard, likeCard, dislikeCard };

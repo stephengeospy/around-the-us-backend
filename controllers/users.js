@@ -5,11 +5,14 @@ const handleError = (err, res) => {
   if ( err.name === 'ValidationError' ) {
     err.statusCode = 400
     err.message = "Bad request"
+  } else if (err.name === 'DocumentNotFoundError') {
+    err.statusCode = 404
+    err.message = "The requested User is not found."
   } else {
     err.statusCode = 500
     err.message = "Internal Server Error"
   }
-  res.status(err.statusCode).send({ message: `${err.message} - ${err.name}` });
+  res.status(err.statusCode).send({ message: `${err.name} - ${err.message}` });
 };
 
 
@@ -22,12 +25,8 @@ const getUsers = (req, res) => {
 
 const getUsersProfile = (req, res) => {
   User.findById({ _id: req.params.userId })
-    .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'User ID not found' });
-      }
-      res.status(200).send(user);
-    })
+    .orFail()
+    .then((user) => res.status(200).send(user))
     .catch((err) => handleError(err, res));
 };
 
@@ -38,5 +37,46 @@ const createUser = (req, res) => {
     .catch((err) => handleError(err, res));
 };
 
+const updateProfile = (req, res) => {
+  const { name } = req.body;
+  const { _id } = req.params;
+  console.log(_id, name);
 
-module.exports = { getUsers, getUsersProfile, createUser };
+  User.findByIdAndUpdate(
+    _id,
+    { name },
+    {
+      new: true,
+      runValidators: true, // Don't think this is enforcing validation
+      upsert: true
+    })
+    .orFail()
+    .then((user) => {
+      res.send({ data: user })
+    })
+    .catch((err) => handleError(err, res));
+};
+
+const updateAvatar = (req, res) => {
+  const { avatar } = req.body;
+  const { _id } = req.user;
+  console.log(_id, avatar);
+
+  User.findByIdAndUpdate(
+    _id,
+    { avatar },
+    {
+      new: true,
+      runValidators: true, // Don't think this is enforcing validation
+      upsert: true
+    })
+    .orFail()
+    .then((user) => {
+      res.send({ data: user })
+    })
+    .catch((err) => handleError(err, res));
+};
+
+module.exports = {  getUsers, getUsersProfile,
+                    createUser, updateProfile,
+                    updateAvatar };

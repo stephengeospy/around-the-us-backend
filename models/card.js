@@ -5,7 +5,7 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 2,
-    maxlenght: 30
+    maxlenght: 30,
   },
   link: {
     type: String,
@@ -14,8 +14,8 @@ const cardSchema = new mongoose.Schema({
       validator(v) {
         return /^http[s]{0,1}?:\/\/(www.)?[a-zA-Z0-9\-._~:\/?%#\[\]@!$&'()*+,;=]*/.test(v);
       },
-      message: 'Provide valid URL'
-    }
+      message: 'Provide valid URL',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,12 +25,12 @@ const cardSchema = new mongoose.Schema({
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    default: []
+    default: [],
   }],
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model('card', cardSchema);
